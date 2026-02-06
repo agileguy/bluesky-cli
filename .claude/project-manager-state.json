@@ -1,15 +1,18 @@
 {
   "srd_path": "/Users/de895996/repos/bluesky-cli/docs/SRD.md",
   "repo_path": "/Users/de895996/repos/bluesky-cli",
-  "total_phases": 5,
-  "current_phase": 1,
-  "completed_phases": [],
-  "status": "in_progress",
+  "total_phases": 6,
+  "current_phase": 6,
+  "completed_phases": [1, 2, 3, 4, 5, 6],
+  "status": "completed",
   "phases": [
-    {"id": 1, "name": "Core Foundation", "status": "in_progress"},
-    {"id": 2, "name": "Posting & Timeline", "status": "pending"},
-    {"id": 3, "name": "Social Features", "status": "pending"},
-    {"id": 4, "name": "Direct Messages", "status": "pending"},
-    {"id": 5, "name": "Polish & Release", "status": "pending"}
-  ]
+    {"id": 1, "name": "Core Foundation", "status": "completed", "pr": 1},
+    {"id": 2, "name": "Posting & Timeline", "status": "completed", "pr": 2},
+    {"id": 3, "name": "Social Features", "status": "completed", "pr": 3},
+    {"id": 4, "name": "Direct Messages", "status": "completed", "pr": 4},
+    {"id": 5, "name": "Polish & Release", "status": "completed", "pr": 5},
+    {"id": 6, "name": "Documentation & Testing", "status": "completed", "pr": 6}
+  ],
+  "completion_date": "2026-02-06",
+  "test_count": 177
 }
