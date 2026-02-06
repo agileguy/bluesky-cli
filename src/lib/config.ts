@@ -1,5 +1,13 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, statSync } from 'fs';
-import { homedir } from 'os';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  chmodSync,
+  statSync,
+  unlinkSync,
+} from 'fs';
+import { homedir, hostname } from 'os';
 import { join } from 'path';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
@@ -41,19 +49,38 @@ export class ConfigManager {
   private configDir: string;
   private configPath: string;
   private sessionPath: string;
+  private saltPath: string;
   private encryptionKey: Buffer;
 
   constructor() {
     this.configDir = join(homedir(), '.config', 'bluesky-cli');
     this.configPath = join(this.configDir, 'config.json');
     this.sessionPath = join(this.configDir, 'session.json');
-
-    // Derive encryption key from system-specific information
-    // In production, this should use a more secure key derivation method
-    const keyMaterial = `${homedir()}-bluesky-cli-v1`;
-    this.encryptionKey = scryptSync(keyMaterial, 'salt', 32);
+    this.saltPath = join(this.configDir, '.salt');
 
     this.ensureConfigDirectory();
+    this.encryptionKey = this.deriveEncryptionKey();
+  }
+
+  /**
+   * Derives encryption key from system-specific information and random salt
+   * @returns Buffer containing the derived encryption key
+   */
+  private deriveEncryptionKey(): Buffer {
+    // Get or create random salt
+    let salt: Buffer;
+    if (existsSync(this.saltPath)) {
+      salt = readFileSync(this.saltPath);
+    } else {
+      // Generate cryptographically secure random salt
+      salt = randomBytes(32);
+      writeFileSync(this.saltPath, salt, { mode: 0o600 });
+      chmodSync(this.saltPath, 0o600);
+    }
+
+    // Combine machine-specific entropy with salt for key derivation
+    const keyMaterial = `${homedir()}-${hostname()}-${process.env.USER || 'unknown'}-bluesky-cli-v1`;
+    return scryptSync(keyMaterial, salt, 32);
   }
 
   /**
@@ -80,9 +107,7 @@ export class ConfigManager {
 
     // Check if file is readable/writable by group or others
     if (mode & parseInt('077', 8)) {
-      throw new Error(
-        `Insecure permissions on ${filePath}. Run: chmod 600 ${filePath}`
-      );
+      throw new Error(`Insecure permissions on ${filePath}. Run: chmod 600 ${filePath}`);
     }
   }
 
@@ -227,12 +252,12 @@ export class ConfigManager {
   }
 
   /**
-   * Clears the current session
+   * Clears the current session by deleting the session file
    */
   public clearSession(): void {
     try {
       if (existsSync(this.sessionPath)) {
-        writeFileSync(this.sessionPath, '', { mode: 0o600 });
+        unlinkSync(this.sessionPath);
       }
     } catch (error) {
       if (error instanceof Error) {

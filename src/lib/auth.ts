@@ -2,7 +2,10 @@ import { BskyAgent, AtpSessionData, AtpSessionEvent } from '@atproto/api';
 import { ConfigManager, Session } from './config.js';
 
 export class AuthError extends Error {
-  constructor(message: string, public readonly code?: string) {
+  constructor(
+    message: string,
+    public readonly code?: string
+  ) {
     super(message);
     this.name = 'AuthError';
   }
@@ -75,13 +78,25 @@ export class AuthManager {
       this.config.writeSession(session);
       return session;
     } catch (error: any) {
+      // Sanitize error messages - only expose known error patterns
       if (error.message?.includes('Invalid identifier or password')) {
         throw new AuthError('Invalid handle or password', 'INVALID_CREDENTIALS');
       }
-      if (error.message?.includes('Network')) {
+      if (
+        error.message?.includes('Network') ||
+        error.code === 'ENOTFOUND' ||
+        error.code === 'ECONNREFUSED'
+      ) {
         throw new AuthError('Network error - check your connection', 'NETWORK_ERROR');
       }
-      throw new AuthError(error.message || 'Login failed', error.code);
+      if (error instanceof AuthError) {
+        throw error;
+      }
+      // For unknown errors, return generic message to avoid leaking sensitive information
+      throw new AuthError(
+        'Login failed - please check your credentials and try again',
+        'LOGIN_FAILED'
+      );
     }
   }
 
