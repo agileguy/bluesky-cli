@@ -16,9 +16,10 @@ import { createFollowCommand } from './commands/follow.js';
 import { createUnfollowCommand } from './commands/unfollow.js';
 import { createFollowersCommand } from './commands/followers.js';
 import { createFollowingCommand } from './commands/following.js';
+import { createDmCommand } from './commands/dm.js';
 
 /**
- * Bluesky CLI - Phase 3: Social Features
+ * Bluesky CLI - Phase 4: Direct Messages
  *
  * A command-line interface for interacting with Bluesky/ATProto
  */
@@ -59,6 +60,9 @@ async function main(): Promise<void> {
   program.addCommand(createUnfollowCommand(configManager));
   program.addCommand(createFollowersCommand(configManager));
   program.addCommand(createFollowingCommand(configManager));
+
+  // Register direct message commands
+  program.addCommand(createDmCommand(configManager));
 
   // Parse arguments
   try {
