@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { ConfigManager } from './lib/config.js';
+import { formatError, getExitCode } from './lib/errors.js';
 import { createLoginCommand } from './commands/login.js';
 import { createLogoutCommand } from './commands/logout.js';
 import { createWhoamiCommand } from './commands/whoami.js';
@@ -19,12 +20,23 @@ import { createFollowingCommand } from './commands/following.js';
 import { createDmCommand } from './commands/dm.js';
 
 /**
- * Bluesky CLI - Phase 4: Direct Messages
+ * Bluesky CLI - Phase 5: Error Handling and Performance Polish
  *
  * A command-line interface for interacting with Bluesky/ATProto
  */
 
 const program = new Command();
+
+// Global debug flag state
+export let isDebugEnabled = false;
+
+export function setDebugEnabled(enabled: boolean): void {
+  isDebugEnabled = enabled;
+}
+
+export function getDebugEnabled(): boolean {
+  return isDebugEnabled;
+}
 
 async function main(): Promise<void> {
   // Initialize configuration manager
@@ -35,6 +47,7 @@ async function main(): Promise<void> {
     .description('Bluesky command-line interface for ATProto social networking')
     .version('0.1.0')
     .option('-v, --verbose', 'enable verbose output')
+    .option('--debug', 'enable debug mode with full error stack traces')
     .option('--no-color', 'disable colored output');
 
   // Register authentication commands
@@ -68,8 +81,14 @@ async function main(): Promise<void> {
   try {
     await program.parseAsync(process.argv);
 
-    // If verbose mode and no subcommand, show configuration status
+    // Set debug flag globally
     const options = program.opts();
+    if (options.debug) {
+      setDebugEnabled(true);
+      console.log(chalk.yellow('Debug mode enabled - showing detailed error information'));
+    }
+
+    // If verbose mode and no subcommand, show configuration status
     if (options.verbose && process.argv.length === 2) {
       const config = configManager.readConfig();
       console.log(chalk.cyan('Configuration loaded successfully:'));
@@ -91,12 +110,16 @@ async function main(): Promise<void> {
       program.help();
     }
   } catch (error) {
-    console.error(chalk.red(`Error: ${(error as Error).message}`));
-    process.exit(1);
+    const errorMessage = formatError(error as Error, isDebugEnabled);
+    console.error(chalk.red('Error:'));
+    console.error(errorMessage);
+    process.exit(getExitCode(error as Error));
   }
 }
 
 main().catch((error) => {
-  console.error(chalk.red(`Fatal error: ${error.message}`));
-  process.exit(1);
+  const errorMessage = formatError(error as Error, isDebugEnabled);
+  console.error(chalk.red('Fatal error:'));
+  console.error(errorMessage);
+  process.exit(getExitCode(error as Error));
 });
