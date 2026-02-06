@@ -91,9 +91,10 @@ export function createSearchCommand(config: ConfigManager): Command {
           // Replace newlines with spaces in bio
           bio = bio.replace(/\n/g, ' ');
 
-          const followers = (actor as any).followersCount !== undefined
-            ? (actor as any).followersCount.toLocaleString()
-            : 'N/A';
+          const followers =
+            (actor as any).followersCount !== undefined
+              ? (actor as any).followersCount.toLocaleString()
+              : 'N/A';
 
           table.push([handle, displayName, bio, followers]);
         });

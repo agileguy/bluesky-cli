@@ -78,7 +78,11 @@ function formatDetailedProfile(
     lines.push('│                                     │');
     const websiteLine = `│  🔗 ${(profile as any).website}`;
     const websitePadding = 40 - websiteLine.length;
-    lines.push(websiteLine.substring(0, 39) + ' '.repeat(Math.max(0, Math.min(websitePadding, 40 - websiteLine.length))) + '│');
+    lines.push(
+      websiteLine.substring(0, 39) +
+        ' '.repeat(Math.max(0, Math.min(websitePadding, 40 - websiteLine.length))) +
+        '│'
+    );
   }
 
   // Account creation date (if available in indexedAt)
@@ -118,15 +122,17 @@ function formatDetailedProfile(
 
   // Apply color if enabled
   if (useColor) {
-    return lines.map((line) => {
-      if (line.includes('╭') || line.includes('╰') || line.includes('├')) {
-        return chalk.cyan(line);
-      } else if (line.includes('│')) {
-        // Color the borders but keep content normal
-        return line.replace(/^│/, chalk.cyan('│')).replace(/│$/, chalk.cyan('│'));
-      }
-      return line;
-    }).join('\n');
+    return lines
+      .map((line) => {
+        if (line.includes('╭') || line.includes('╰') || line.includes('├')) {
+          return chalk.cyan(line);
+        } else if (line.includes('│')) {
+          // Color the borders but keep content normal
+          return line.replace(/^│/, chalk.cyan('│')).replace(/│$/, chalk.cyan('│'));
+        }
+        return line;
+      })
+      .join('\n');
   }
 
   return lines.join('\n');
@@ -182,9 +188,7 @@ export function createProfileCommand(config: ConfigManager): Command {
         }
 
         // DID (for reference)
-        const didLine = useColor
-          ? chalk.gray(`DID: ${profile.did}`)
-          : `DID: ${profile.did}`;
+        const didLine = useColor ? chalk.gray(`DID: ${profile.did}`) : `DID: ${profile.did}`;
         console.log(didLine + '\n');
       } catch (error: any) {
         if (error.code === 'NOT_AUTHENTICATED') {

@@ -205,7 +205,9 @@ export class OutputFormatter {
     }
 
     if (stats.length > 0) {
-      const statsLine = this.useColor ? chalk.gray(`  ${stats.join(' • ')}`) : `  ${stats.join(' • ')}`;
+      const statsLine = this.useColor
+        ? chalk.gray(`  ${stats.join(' • ')}`)
+        : `  ${stats.join(' • ')}`;
       lines.push(statsLine);
     }
 
@@ -217,9 +219,7 @@ export class OutputFormatter {
    */
   formatCursorHint(cursor?: string): string {
     if (!cursor) {
-      return this.useColor
-        ? chalk.gray('  (No more items)')
-        : '  (No more items)';
+      return this.useColor ? chalk.gray('  (No more items)') : '  (No more items)';
     }
 
     const hint = `Use --cursor="${cursor}" for more`;
