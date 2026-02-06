@@ -1,7 +1,7 @@
 # Bluesky CLI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/bluesky-cli)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/agileguy/bluesky-cli)
 
 A powerful command-line interface for the Bluesky social network, built on the AT Protocol. Post, interact, and manage your Bluesky presence directly from your terminal.
 
@@ -528,7 +528,7 @@ Contributions are welcome! This project is built with TypeScript and Bun.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/bluesky-cli.git
+git clone https://github.com/agileguy/bluesky-cli.git
 cd bluesky-cli
 
 # Install dependencies
@@ -536,6 +536,9 @@ bun install
 
 # Run in development mode
 bun run dev
+
+# Run tests
+bun test
 
 # Build for production
 bun run build
@@ -605,7 +608,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- GitHub Issues: [Report bugs or request features](https://github.com/yourusername/bluesky-cli/issues)
+- GitHub Issues: [Report bugs or request features](https://github.com/agileguy/bluesky-cli/issues)
 - AT Protocol Community: [atproto.com/community](https://atproto.com/community)
 
 ---
