@@ -1,0 +1,36 @@
+{
+  "name": "bluesky-cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Bluesky/ATProto social networking",
+  "main": "dist/index.js",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "bsky": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm",
+    "dev": "bun run src/index.ts",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.18.20",
+    "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3"
+  }
+}
