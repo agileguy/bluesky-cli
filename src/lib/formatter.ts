@@ -3,6 +3,7 @@ import {
   AppBskyFeedDefs,
   AppBskyNotificationListNotifications,
   AppBskyActorDefs,
+  ChatBskyConvoDefs,
 } from '@atproto/api';
 
 /**
@@ -232,5 +233,72 @@ export class OutputFormatter {
   formatSeparator(): string {
     const separator = '─'.repeat(50);
     return this.useColor ? chalk.gray(separator) : separator;
+  }
+
+  /**
+   * Format a conversation (DM) for display in list
+   * @param convo The conversation to format
+   * @param currentUserDid The DID of the current user to filter out from members
+   */
+  formatConversation(convo: ChatBskyConvoDefs.ConvoView, currentUserDid: string): string {
+    const lines: string[] = [];
+
+    // Get the other participant(s) - filter out current user
+    const otherMembers = convo.members.filter((member) => member.did !== currentUserDid);
+
+    if (otherMembers.length === 0) {
+      // Shouldn't happen, but handle gracefully
+      return this.useColor ? chalk.gray('  (Unknown conversation)') : '  (Unknown conversation)';
+    }
+
+    // For now, show the first other member (group DMs might have multiple)
+    const otherMember = otherMembers[0]!;
+
+    // Build the participant line with unread indicator
+    const unreadIndicator = convo.unreadCount > 0 ? '🔔 ' : '   ';
+    const displayName = otherMember.displayName || otherMember.handle;
+    const handle = `@${otherMember.handle}`;
+
+    const participantLine = this.useColor
+      ? `${unreadIndicator}${chalk.bold(displayName)} ${chalk.gray(handle)}`
+      : `${unreadIndicator}${displayName} ${handle}`;
+    lines.push(participantLine);
+
+    // Last message preview
+    if (convo.lastMessage) {
+      const lastMsg = convo.lastMessage as any;
+
+      // Check if it's a deleted message
+      if (lastMsg.$type === 'chat.bsky.convo.defs#deletedMessageView') {
+        const deletedLine = this.useColor
+          ? chalk.gray('   [Message deleted]')
+          : '   [Message deleted]';
+        lines.push(deletedLine);
+      } else if ('text' in lastMsg && lastMsg.text) {
+        // Truncate message text to 50 characters
+        const truncatedText = lastMsg.text.length > 50
+          ? `${lastMsg.text.substring(0, 50)}...`
+          : lastMsg.text;
+
+        // Replace newlines with spaces for preview
+        const previewText = truncatedText.replace(/\n/g, ' ');
+
+        // Format timestamp
+        const timestamp = this.formatRelativeTime(lastMsg.sentAt);
+
+        const messageLine = this.useColor
+          ? chalk.gray(`   "${previewText}" · ${timestamp}`)
+          : `   "${previewText}" · ${timestamp}`;
+        lines.push(messageLine);
+      }
+    } else {
+      // No messages yet
+      const noMessagesLine = this.useColor
+        ? chalk.gray('   (No messages)')
+        : '   (No messages)';
+      lines.push(noMessagesLine);
+    }
+
+    return lines.join('\n');
   }
 }

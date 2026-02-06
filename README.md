@@ -30,6 +30,15 @@ bsky timeline
 
 # Follow someone
 bsky follow @user.bsky.social
+
+# Send a DM
+bsky dm send @user.bsky.social "Hello!"
+
+# List DM conversations
+bsky dm list
+
+# Read DM conversation
+bsky dm read @user.bsky.social
 ```
 
 ## Documentation
