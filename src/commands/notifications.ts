@@ -69,7 +69,9 @@ export function createNotificationsCommand(config: ConfigManager): Command {
         // Count unread
         const unreadCount = notifications.filter((n) => !n.isRead).length;
         if (!options.unread && unreadCount > 0) {
-          console.log(chalk.cyan(`  ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}\n`));
+          console.log(
+            chalk.cyan(`  ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}\n`)
+          );
         }
 
         // Display each notification

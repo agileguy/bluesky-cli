@@ -26,7 +26,9 @@ async function confirmDeletion(uri: string): Promise<boolean> {
     });
 
     rl.question(
-      chalk.yellow(`Are you sure you want to delete this post?\n${chalk.gray(uri)}\nType 'yes' to confirm: `),
+      chalk.yellow(
+        `Are you sure you want to delete this post?\n${chalk.gray(uri)}\nType 'yes' to confirm: `
+      ),
       (answer) => {
         rl.close();
         resolve(answer.toLowerCase() === 'yes');
@@ -84,7 +86,9 @@ export function createDeleteCommand(config: ConfigManager): Command {
           }
         } catch (error: any) {
           if (error.status === 404 || error.message.includes('RecordNotFound')) {
-            throw new Error('Post not found. It may have already been deleted or the URI is incorrect.');
+            throw new Error(
+              'Post not found. It may have already been deleted or the URI is incorrect.'
+            );
           }
           if (error.message.includes('Cannot delete')) {
             throw error;
@@ -123,11 +127,17 @@ export function createDeleteCommand(config: ConfigManager): Command {
 
         // Format output
         if (options.json) {
-          console.log(JSON.stringify({
-            success: true,
-            deletedUri: uri,
-            timestamp: new Date().toISOString(),
-          }, null, 2));
+          console.log(
+            JSON.stringify(
+              {
+                success: true,
+                deletedUri: uri,
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            )
+          );
         } else {
           const formatter = new OutputFormatter('human', config.readConfig().colorOutput);
           console.log(formatter.formatMessage('Post deleted successfully!', 'success'));

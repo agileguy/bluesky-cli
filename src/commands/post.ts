@@ -71,7 +71,9 @@ function validatePostText(text: string): void {
   }
 
   if (text.length > MAX_POST_LENGTH) {
-    throw new Error(`Post text exceeds maximum length of ${MAX_POST_LENGTH} characters (got ${text.length})`);
+    throw new Error(
+      `Post text exceeds maximum length of ${MAX_POST_LENGTH} characters (got ${text.length})`
+    );
   }
 }
 
@@ -107,7 +109,9 @@ async function loadImages(imagePaths: string[], altTexts: string[]): Promise<Ima
     // Check file size
     const stats = statSync(imagePath);
     if (stats.size > MAX_IMAGE_SIZE) {
-      throw new Error(`Image ${imagePath} exceeds maximum size of ${MAX_IMAGE_SIZE / 1024 / 1024}MB (got ${(stats.size / 1024 / 1024).toFixed(2)}MB)`);
+      throw new Error(
+        `Image ${imagePath} exceeds maximum size of ${MAX_IMAGE_SIZE / 1024 / 1024}MB (got ${(stats.size / 1024 / 1024).toFixed(2)}MB)`
+      );
     }
 
     // Determine MIME type from extension
@@ -166,12 +170,22 @@ export function createPostCommand(config: ConfigManager): Command {
   command
     .description('Create a new post on Bluesky')
     .argument('[text]', 'post text (or read from stdin)')
-    .option('-i, --image <path>', 'attach image (can be used multiple times, max 4)', (value, previous: string[]) => {
-      return previous ? [...previous, value] : [value];
-    }, [] as string[])
-    .option('-a, --alt <text>', 'alt text for images (in order)', (value, previous: string[]) => {
-      return previous ? [...previous, value] : [value];
-    }, [] as string[])
+    .option(
+      '-i, --image <path>',
+      'attach image (can be used multiple times, max 4)',
+      (value, previous: string[]) => {
+        return previous ? [...previous, value] : [value];
+      },
+      [] as string[]
+    )
+    .option(
+      '-a, --alt <text>',
+      'alt text for images (in order)',
+      (value, previous: string[]) => {
+        return previous ? [...previous, value] : [value];
+      },
+      [] as string[]
+    )
     .option('-r, --reply-to <uri>', 'AT URI of post to reply to')
     .option('-q, --quote <uri>', 'AT URI of post to quote')
     .option('--json', 'output as JSON')
@@ -197,7 +211,9 @@ export function createPostCommand(config: ConfigManager): Command {
         let imageEmbed: any = undefined;
         if (options.image && options.image.length > 0) {
           const images = await loadImages(options.image, options.alt);
-          console.log(chalk.blue(`Uploading ${images.length} image${images.length !== 1 ? 's' : ''}...`));
+          console.log(
+            chalk.blue(`Uploading ${images.length} image${images.length !== 1 ? 's' : ''}...`)
+          );
           const uploadedImages = await uploadImages(auth, images);
           imageEmbed = {
             $type: 'app.bsky.embed.images',

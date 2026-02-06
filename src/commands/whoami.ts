@@ -27,27 +27,41 @@ export function createWhoamiCommand(config: ConfigManager): Command {
         const isValid = await auth.validateSession();
 
         if (options.json) {
-          console.log(JSON.stringify({
-            authenticated: isValid,
-            handle: session.handle,
-            did: session.did,
-            lastUsed: session.lastUsed,
-          }, null, 2));
+          console.log(
+            JSON.stringify(
+              {
+                authenticated: isValid,
+                handle: session.handle,
+                did: session.did,
+                lastUsed: session.lastUsed,
+              },
+              null,
+              2
+            )
+          );
         } else {
           console.log(chalk.green('Logged in as:'));
           console.log(chalk.cyan(`  Handle: ${session.handle}`));
           console.log(chalk.gray(`  DID: ${session.did}`));
           console.log(chalk.gray(`  Last used: ${new Date(session.lastUsed).toLocaleString()}`));
-          console.log(chalk.gray(`  Session: ${isValid ? chalk.green('Valid') : chalk.red('Expired')}`));
+          console.log(
+            chalk.gray(`  Session: ${isValid ? chalk.green('Valid') : chalk.red('Expired')}`)
+          );
         }
       } catch (error) {
         if (error instanceof AuthError) {
           if (options.json) {
-            console.log(JSON.stringify({
-              authenticated: false,
-              error: error.message,
-              code: error.code,
-            }, null, 2));
+            console.log(
+              JSON.stringify(
+                {
+                  authenticated: false,
+                  error: error.message,
+                  code: error.code,
+                },
+                null,
+                2
+              )
+            );
           } else {
             console.error(chalk.red(`✗ ${error.message}`));
             if (error.code === 'SESSION_EXPIRED') {
@@ -56,10 +70,16 @@ export function createWhoamiCommand(config: ConfigManager): Command {
           }
         } else {
           if (options.json) {
-            console.log(JSON.stringify({
-              authenticated: false,
-              error: (error as Error).message,
-            }, null, 2));
+            console.log(
+              JSON.stringify(
+                {
+                  authenticated: false,
+                  error: (error as Error).message,
+                },
+                null,
+                2
+              )
+            );
           } else {
             console.error(chalk.red(`✗ Error: ${(error as Error).message}`));
           }

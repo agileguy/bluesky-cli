@@ -98,7 +98,11 @@ export class OutputFormatter {
     lines.push(metaLine);
 
     // Separator
-    lines.push(this.colorEnabled ? chalk.gray('─'.repeat(Math.min(this.terminalWidth - 2, 78))) : '─'.repeat(Math.min(this.terminalWidth - 2, 78)));
+    lines.push(
+      this.colorEnabled
+        ? chalk.gray('─'.repeat(Math.min(this.terminalWidth - 2, 78)))
+        : '─'.repeat(Math.min(this.terminalWidth - 2, 78))
+    );
 
     // Post text (wrapped)
     const wrappedText = this.wrapText(postData.text, 78);
@@ -107,12 +111,18 @@ export class OutputFormatter {
     // Reply/Quote context
     if (postData.replyTo) {
       lines.push('');
-      lines.push(this.colorEnabled ? chalk.gray(`↳ Reply to: ${postData.replyTo}`) : `↳ Reply to: ${postData.replyTo}`);
+      lines.push(
+        this.colorEnabled
+          ? chalk.gray(`↳ Reply to: ${postData.replyTo}`)
+          : `↳ Reply to: ${postData.replyTo}`
+      );
     }
 
     if (postData.quotedPost) {
       lines.push('');
-      lines.push(this.colorEnabled ? chalk.gray('📎 Quoted post attached') : '📎 Quoted post attached');
+      lines.push(
+        this.colorEnabled ? chalk.gray('📎 Quoted post attached') : '📎 Quoted post attached'
+      );
     }
 
     // Embed info
