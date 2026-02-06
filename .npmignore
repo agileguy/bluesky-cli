@@ -1,0 +1,61 @@
+# Source files (only ship dist/)
+src/
+*.ts
+!*.d.ts
+
+# Development configuration
+tsconfig.json
+.eslintrc*
+.prettierrc*
+.editorconfig
+
+# IDE and editor files
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (dev-only)
+docs/
+CLAUDE.md
+
+# Test files
+test/
+tests/
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Build artifacts
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Dependency directories (they'll be installed)
+node_modules/
+
+# Lock files
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
