@@ -1,8 +1,12 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
+import ora from 'ora';
 import { ConfigManager } from '../lib/config.js';
 import { requireAuth } from '../lib/auth.js';
 import { OutputFormatter } from '../lib/formatter.js';
+import { formatError, getExitCode, ValidationError } from '../lib/errors.js';
+import { getDebugEnabled } from '../index.js';
+import { withRetry, RetryProfiles } from '../lib/retry.js';
 
 export function createTimelineCommand(config: ConfigManager): Command {
   return new Command('timeline')
@@ -19,15 +23,27 @@ export function createTimelineCommand(config: ConfigManager): Command {
         // Validate and parse limit
         const limit = parseInt(options.limit, 10);
         if (isNaN(limit) || limit < 1 || limit > 100) {
-          console.error(chalk.red('Error: Limit must be between 1 and 100'));
-          process.exit(1);
+          throw new ValidationError('Limit must be between 1 and 100', { code: 'INVALID_LIMIT' });
         }
 
-        // Fetch timeline
-        const response = await agent.getTimeline({
-          limit,
-          cursor: options.cursor,
-        });
+        // Fetch timeline with spinner and retry logic
+        const spinner = ora('Fetching timeline...').start();
+
+        const response = await withRetry(
+          () =>
+            agent.getTimeline({
+              limit,
+              cursor: options.cursor,
+            }),
+          {
+            ...RetryProfiles.standard,
+            onRetry: (attempt) => {
+              spinner.text = `Fetching timeline... (retry ${attempt})`;
+            },
+          }
+        );
+
+        spinner.stop();
 
         // JSON output mode
         if (options.json) {
@@ -69,14 +85,10 @@ export function createTimelineCommand(config: ConfigManager): Command {
         console.log(formatter.formatCursorHint(response.data.cursor));
         console.log('');
       } catch (error: any) {
-        if (error.code === 'NOT_AUTHENTICATED') {
-          console.error(chalk.red('Error: Not logged in. Run "bsky login" first.'));
-        } else if (error.status === 401) {
-          console.error(chalk.red('Error: Session expired. Please login again.'));
-        } else {
-          console.error(chalk.red(`Error: ${error.message || 'Failed to fetch timeline'}`));
-        }
-        process.exit(1);
+        const errorMessage = formatError(error as Error, getDebugEnabled());
+        console.error(chalk.red('Error:'));
+        console.error(errorMessage);
+        process.exit(getExitCode(error as Error));
       }
     });
 }

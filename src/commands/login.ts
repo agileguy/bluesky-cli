@@ -1,8 +1,11 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { createInterface } from 'readline';
+import ora from 'ora';
 import { ConfigManager } from '../lib/config.js';
-import { AuthManager, AuthError } from '../lib/auth.js';
+import { AuthManager } from '../lib/auth.js';
+import { formatError, getExitCode } from '../lib/errors.js';
+import { getDebugEnabled } from '../index.js';
 
 function createReadline() {
   return createInterface({
@@ -138,33 +141,28 @@ export function createLoginCommand(config: ConfigManager): Command {
 
         rl.close();
 
-        // Attempt login
-        console.log(chalk.gray('Logging in...'));
-        const auth = new AuthManager(config, options.service);
-        const session = await auth.login(handle.trim(), password.trim(), options.service);
+        // Attempt login with spinner
+        const spinner = ora('Logging in to Bluesky...').start();
 
-        console.log(chalk.green('✓ Successfully logged in!'));
-        console.log(chalk.gray(`  Handle: ${session.handle}`));
-        console.log(chalk.gray(`  DID: ${session.did}`));
-        if (options.service) {
-          console.log(chalk.gray(`  Service: ${options.service}`));
+        try {
+          const auth = new AuthManager(config, options.service);
+          const session = await auth.login(handle.trim(), password.trim(), options.service);
+
+          spinner.succeed('Successfully logged in!');
+          console.log(chalk.gray(`  Handle: ${session.handle}`));
+          console.log(chalk.gray(`  DID: ${session.did}`));
+          if (options.service) {
+            console.log(chalk.gray(`  Service: ${options.service}`));
+          }
+        } catch (loginError) {
+          spinner.fail('Login failed');
+          throw loginError;
         }
       } catch (error) {
-        if (error instanceof AuthError) {
-          switch (error.code) {
-            case 'INVALID_CREDENTIALS':
-              console.error(chalk.red('✗ Invalid handle or password'));
-              break;
-            case 'NETWORK_ERROR':
-              console.error(chalk.red('✗ Network error - check your internet connection'));
-              break;
-            default:
-              console.error(chalk.red(`✗ Login failed: ${error.message}`));
-          }
-        } else {
-          console.error(chalk.red(`✗ Unexpected error: ${(error as Error).message}`));
-        }
-        process.exit(1);
+        const errorMessage = formatError(error as Error, getDebugEnabled());
+        console.error(chalk.red('\nError:'));
+        console.error(errorMessage);
+        process.exit(getExitCode(error as Error));
       }
     });
 }

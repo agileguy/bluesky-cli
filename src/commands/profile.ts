@@ -1,8 +1,12 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
+import ora from 'ora';
 import { ConfigManager } from '../lib/config.js';
 import { requireAuth } from '../lib/auth.js';
 import { AppBskyActorDefs } from '@atproto/api';
+import { formatError, getExitCode, NotFoundError } from '../lib/errors.js';
+import { getDebugEnabled } from '../index.js';
+import { withRetry, RetryProfiles } from '../lib/retry.js';
 
 /**
  * Format a profile in a detailed box format
@@ -152,17 +156,26 @@ export function createProfileCommand(config: ConfigManager): Command {
         // Clean up handle (remove @ if present)
         const handle = handleArg.startsWith('@') ? handleArg.substring(1) : handleArg;
 
-        // Fetch profile
+        // Fetch profile with spinner
+        const spinner = ora(`Fetching profile for @${handle}...`).start();
+
         let profileResponse;
         try {
-          profileResponse = await agent.getProfile({ actor: handle });
+          profileResponse = await withRetry(() => agent.getProfile({ actor: handle }), {
+            ...RetryProfiles.fast,
+            onRetry: (attempt) => {
+              spinner.text = `Fetching profile for @${handle}... (retry ${attempt})`;
+            },
+          });
+          spinner.stop();
         } catch (error: any) {
+          spinner.fail(`Could not fetch profile for @${handle}`);
           if (error.status === 400 || error.message?.includes('Unable to resolve')) {
-            console.error(chalk.red(`Error: Profile "${handle}" not found`));
-          } else {
-            console.error(chalk.red(`Error: Failed to fetch profile for "${handle}"`));
+            throw new NotFoundError(`Profile "${handle}" not found`, {
+              code: 'PROFILE_NOT_FOUND',
+            });
           }
-          process.exit(1);
+          throw error;
         }
 
         const profile = profileResponse.data;
@@ -191,14 +204,10 @@ export function createProfileCommand(config: ConfigManager): Command {
         const didLine = useColor ? chalk.gray(`DID: ${profile.did}`) : `DID: ${profile.did}`;
         console.log(didLine + '\n');
       } catch (error: any) {
-        if (error.code === 'NOT_AUTHENTICATED') {
-          console.error(chalk.red('Error: Not logged in. Run "bsky login" first.'));
-        } else if (error.status === 401) {
-          console.error(chalk.red('Error: Session expired. Please login again.'));
-        } else {
-          console.error(chalk.red(`Error: ${error.message || 'Failed to fetch profile'}`));
-        }
-        process.exit(1);
+        const errorMessage = formatError(error as Error, getDebugEnabled());
+        console.error(chalk.red('Error:'));
+        console.error(errorMessage);
+        process.exit(getExitCode(error as Error));
       }
     });
 }
