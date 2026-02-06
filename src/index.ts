@@ -5,9 +5,14 @@ import { ConfigManager } from './lib/config.js';
 import { createLoginCommand } from './commands/login.js';
 import { createLogoutCommand } from './commands/logout.js';
 import { createWhoamiCommand } from './commands/whoami.js';
+import { createPostCommand } from './commands/post.js';
+import { createDeleteCommand } from './commands/delete.js';
+import { createTimelineCommand } from './commands/timeline.js';
+import { createPostsCommand } from './commands/posts.js';
+import { createNotificationsCommand } from './commands/notifications.js';
 
 /**
- * Bluesky CLI - Phase 1: Core Foundation
+ * Bluesky CLI - Phase 2: Posting & Timeline
  *
  * A command-line interface for interacting with Bluesky/ATProto
  */
@@ -29,6 +34,15 @@ async function main(): Promise<void> {
   program.addCommand(createLoginCommand(configManager));
   program.addCommand(createLogoutCommand(configManager));
   program.addCommand(createWhoamiCommand(configManager));
+
+  // Register post management commands
+  program.addCommand(createPostCommand(configManager));
+  program.addCommand(createDeleteCommand(configManager));
+
+  // Register timeline and notification commands
+  program.addCommand(createTimelineCommand(configManager));
+  program.addCommand(createPostsCommand(configManager));
+  program.addCommand(createNotificationsCommand(configManager));
 
   // Parse arguments
   try {

@@ -17,7 +17,7 @@ function question(rl: ReturnType<typeof createReadline>, query: string): Promise
   });
 }
 
-function questionSecret(rl: ReturnType<typeof createReadline>, query: string): Promise<string> {
+function questionSecret(_rl: ReturnType<typeof createReadline>, query: string): Promise<string> {
   return new Promise((resolve) => {
     // Disable echo for password input
     const stdin = process.stdin as any;

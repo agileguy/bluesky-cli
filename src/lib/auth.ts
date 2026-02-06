@@ -1,5 +1,7 @@
-import { BskyAgent, AtpSessionData, AtpSessionEvent } from '@atproto/api';
-import { ConfigManager, Session } from './config.js';
+import { BskyAgent } from '@atproto/api';
+import type { AtpSessionData } from '@atproto/api';
+import type { Session } from './config.js';
+import { ConfigManager } from './config.js';
 
 export class AuthError extends Error {
   constructor(
@@ -20,30 +22,6 @@ export class AuthManager {
     const configData = config.readConfig();
     const serviceUrl = service || configData.apiEndpoint;
     this.agent = new BskyAgent({ service: serviceUrl });
-
-    // Set up session event listener for auto-refresh
-    this.agent.on('sessionUpdate', this.handleSessionUpdate.bind(this));
-  }
-
-  private handleSessionUpdate(event: AtpSessionEvent, session: AtpSessionData | undefined): void {
-    if (event === 'create' || event === 'update') {
-      if (session) {
-        // Save updated session tokens
-        const sessionData: Session = {
-          did: session.did,
-          handle: session.handle,
-          accessJwt: session.accessJwt,
-          refreshJwt: session.refreshJwt,
-          lastUsed: new Date().toISOString(),
-        };
-
-        try {
-          this.config.writeSession(sessionData);
-        } catch (error) {
-          console.error('Failed to save session update:', error);
-        }
-      }
-    }
   }
 
   getAgent(): BskyAgent {
@@ -55,7 +33,6 @@ export class AuthManager {
       // If custom service provided, create new agent
       if (service && service !== this.agent.service.toString()) {
         this.agent = new BskyAgent({ service });
-        this.agent.on('sessionUpdate', this.handleSessionUpdate.bind(this));
       }
 
       const response = await this.agent.login({
@@ -101,18 +78,8 @@ export class AuthManager {
   }
 
   async logout(): Promise<void> {
-    try {
-      // Try to delete the session on the server
-      if (this.agent.hasSession) {
-        await this.agent.deleteSession();
-      }
-    } catch (error) {
-      // Continue even if server-side deletion fails
-      console.warn('Failed to delete server session:', error);
-    } finally {
-      // Always clear local session
-      this.config.clearSession();
-    }
+    // Clear local session
+    this.config.clearSession();
   }
 
   async resumeSession(): Promise<boolean> {
@@ -123,12 +90,14 @@ export class AuthManager {
 
     try {
       // Restore session to agent
-      await this.agent.resumeSession({
+      const sessionData: AtpSessionData = {
         did: session.did,
         handle: session.handle,
         accessJwt: session.accessJwt,
         refreshJwt: session.refreshJwt,
-      });
+        active: true,
+      };
+      await this.agent.resumeSession(sessionData);
 
       // Update last used timestamp
       session.lastUsed = new Date().toISOString();
@@ -167,19 +136,12 @@ export class AuthManager {
   }
 
   async refreshSession(): Promise<void> {
-    try {
-      await this.agent.refreshSession();
-
-      // Update last used timestamp
-      const session = this.config.readSession();
-      if (session) {
-        session.lastUsed = new Date().toISOString();
-        this.config.writeSession(session);
-      }
-    } catch (error: any) {
-      // If refresh fails, clear the session
-      this.config.clearSession();
-      throw new AuthError('Session refresh failed - please login again', 'REFRESH_FAILED');
+    // Session refresh is handled automatically by the agent
+    // Just update the last used timestamp
+    const session = this.config.readSession();
+    if (session) {
+      session.lastUsed = new Date().toISOString();
+      this.config.writeSession(session);
     }
   }
 
