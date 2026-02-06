@@ -2,16 +2,12 @@ import { BskyAgent } from '@atproto/api';
 import type { AtpSessionData } from '@atproto/api';
 import type { Session } from './config.js';
 import { ConfigManager } from './config.js';
+import { AuthError, fromApiError } from './errors.js';
+import { withRetry, RetryProfiles } from './retry.js';
+import { getDebugEnabled } from '../index.js';
 
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    public readonly code?: string
-  ) {
-    super(message);
-    this.name = 'AuthError';
-  }
-}
+// Re-export AuthError for backward compatibility
+export { AuthError };
 
 export class AuthManager {
   private agent: BskyAgent;
@@ -35,13 +31,26 @@ export class AuthManager {
         this.agent = new BskyAgent({ service });
       }
 
-      const response = await this.agent.login({
-        identifier,
-        password,
-      });
+      // Login with retry logic
+      const response = await withRetry(
+        () =>
+          this.agent.login({
+            identifier,
+            password,
+          }),
+        {
+          ...RetryProfiles.fast,
+          onRetry: (attempt, error, delayMs) => {
+            if (getDebugEnabled()) {
+              console.error(`Login attempt ${attempt} failed, retrying in ${delayMs}ms...`);
+              console.error(`Error: ${error.message}`);
+            }
+          },
+        }
+      );
 
       if (!response.success) {
-        throw new AuthError('Login failed', 'LOGIN_FAILED');
+        throw new AuthError('Login failed', { code: 'LOGIN_FAILED' });
       }
 
       const session: Session = {
@@ -55,25 +64,8 @@ export class AuthManager {
       this.config.writeSession(session);
       return session;
     } catch (error: any) {
-      // Sanitize error messages - only expose known error patterns
-      if (error.message?.includes('Invalid identifier or password')) {
-        throw new AuthError('Invalid handle or password', 'INVALID_CREDENTIALS');
-      }
-      if (
-        error.message?.includes('Network') ||
-        error.code === 'ENOTFOUND' ||
-        error.code === 'ECONNREFUSED'
-      ) {
-        throw new AuthError('Network error - check your connection', 'NETWORK_ERROR');
-      }
-      if (error instanceof AuthError) {
-        throw error;
-      }
-      // For unknown errors, return generic message to avoid leaking sensitive information
-      throw new AuthError(
-        'Login failed - please check your credentials and try again',
-        'LOGIN_FAILED'
-      );
+      // Convert to appropriate error type
+      throw fromApiError(error);
     }
   }
 
@@ -89,7 +81,7 @@ export class AuthManager {
     }
 
     try {
-      // Restore session to agent
+      // Restore session to agent with retry logic
       const sessionData: AtpSessionData = {
         did: session.did,
         handle: session.handle,
@@ -97,7 +89,16 @@ export class AuthManager {
         refreshJwt: session.refreshJwt,
         active: true,
       };
-      await this.agent.resumeSession(sessionData);
+
+      await withRetry(() => this.agent.resumeSession(sessionData), {
+        ...RetryProfiles.fast,
+        onRetry: (attempt, error, delayMs) => {
+          if (getDebugEnabled()) {
+            console.error(`Resume session attempt ${attempt} failed, retrying in ${delayMs}ms...`);
+            console.error(`Error: ${error.message}`);
+          }
+        },
+      });
 
       // Update last used timestamp
       session.lastUsed = new Date().toISOString();
@@ -107,7 +108,7 @@ export class AuthManager {
     } catch (error: any) {
       // Session is invalid, clear it
       this.config.clearSession();
-      throw new AuthError('Session expired - please login again', 'SESSION_EXPIRED');
+      throw new AuthError('Session expired - please login again', { code: 'SESSION_EXPIRED' });
     }
   }
 
@@ -160,7 +161,7 @@ export async function requireAuth(config: ConfigManager): Promise<AuthManager> {
   const session = config.readSession();
 
   if (!session) {
-    throw new AuthError('Not logged in. Run "bsky login" first.', 'NOT_AUTHENTICATED');
+    throw new AuthError('Not logged in. Run "bsky login" first.', { code: 'NOT_AUTHENTICATED' });
   }
 
   try {
