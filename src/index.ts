@@ -10,9 +10,15 @@ import { createDeleteCommand } from './commands/delete.js';
 import { createTimelineCommand } from './commands/timeline.js';
 import { createPostsCommand } from './commands/posts.js';
 import { createNotificationsCommand } from './commands/notifications.js';
+import { createProfileCommand } from './commands/profile.js';
+import { createSearchCommand } from './commands/search.js';
+import { createFollowCommand } from './commands/follow.js';
+import { createUnfollowCommand } from './commands/unfollow.js';
+import { createFollowersCommand } from './commands/followers.js';
+import { createFollowingCommand } from './commands/following.js';
 
 /**
- * Bluesky CLI - Phase 2: Posting & Timeline
+ * Bluesky CLI - Phase 3: Social Features
  *
  * A command-line interface for interacting with Bluesky/ATProto
  */
@@ -43,6 +49,16 @@ async function main(): Promise<void> {
   program.addCommand(createTimelineCommand(configManager));
   program.addCommand(createPostsCommand(configManager));
   program.addCommand(createNotificationsCommand(configManager));
+
+  // Register social commands
+  program.addCommand(createProfileCommand(configManager));
+  program.addCommand(createSearchCommand(configManager));
+
+  // Register follow management commands
+  program.addCommand(createFollowCommand(configManager));
+  program.addCommand(createUnfollowCommand(configManager));
+  program.addCommand(createFollowersCommand(configManager));
+  program.addCommand(createFollowingCommand(configManager));
 
   // Parse arguments
   try {
