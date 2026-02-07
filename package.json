@@ -1,5 +1,5 @@
 {
-  "name": "bluesky-cli",
+  "name": "bsky-cli",
   "version": "1.0.0",
   "description": "Command-line interface for Bluesky/ATProto social networking",
   "keywords": [

@@ -20,13 +20,13 @@ A powerful command-line interface for the Bluesky social network, built on the A
 ### Using Bun (Recommended)
 
 ```bash
-bun install -g bluesky-cli
+bun install -g bsky-cli
 ```
 
 ### Using npm
 
 ```bash
-npm install -g bluesky-cli
+npm install -g bsky-cli
 ```
 
 ## Quick Start
