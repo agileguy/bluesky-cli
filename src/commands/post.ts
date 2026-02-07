@@ -43,11 +43,24 @@ interface ImageData {
 }
 
 /**
+ * Unescapes common shell escape sequences that shouldn't be in post text.
+ * Bash's history expansion escapes ! to \! in double-quoted strings.
+ */
+function unescapeShellText(text: string): string {
+  return text
+    .replace(/\\!/g, '!')      // \! -> ! (bash history expansion escape)
+    .replace(/\\\$/g, '$')     // \$ -> $ (bash variable escape)
+    .replace(/\\`/g, '`')      // \` -> ` (bash command substitution escape)
+    .replace(/\\"/g, '"')      // \" -> " (bash double quote escape)
+    .replace(/\\\\/g, '\\');   // \\ -> \ (literal backslash, must be last)
+}
+
+/**
  * Reads post text from stdin or returns provided text
  */
 async function readPostText(text?: string): Promise<string> {
   if (text) {
-    return text;
+    return unescapeShellText(text);
   }
 
   // Check if stdin is being piped
@@ -56,7 +69,7 @@ async function readPostText(text?: string): Promise<string> {
     for await (const chunk of process.stdin) {
       chunks.push(chunk);
     }
-    return Buffer.concat(chunks).toString('utf8').trim();
+    return unescapeShellText(Buffer.concat(chunks).toString('utf8').trim());
   }
 
   throw new Error('No post text provided. Use: bsky post "text" or echo "text" | bsky post');

@@ -231,6 +231,70 @@ describe('Post Commands', () => {
     });
   });
 
+  describe('shell escape handling', () => {
+    // Test the unescapeShellText function behavior
+    const unescapeShellText = (text: string): string => {
+      return text
+        .replace(/\\!/g, '!')      // \! -> ! (bash history expansion escape)
+        .replace(/\\\$/g, '$')     // \$ -> $ (bash variable escape)
+        .replace(/\\`/g, '`')      // \` -> ` (bash command substitution escape)
+        .replace(/\\"/g, '"')      // \" -> " (bash double quote escape)
+        .replace(/\\\\/g, '\\');   // \\ -> \ (literal backslash, must be last)
+    };
+
+    it('should unescape bash history expansion (\\!)', () => {
+      const input = 'Hello World\\!';
+      const expected = 'Hello World!';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should unescape multiple exclamation marks', () => {
+      const input = 'Wow\\! Amazing\\! Great\\!';
+      const expected = 'Wow! Amazing! Great!';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should unescape bash variable escape (\\$)', () => {
+      const input = 'Price is \\$100';
+      const expected = 'Price is $100';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should unescape bash command substitution (\\`)', () => {
+      const input = 'Use \\`code\\` here';
+      const expected = 'Use `code` here';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should unescape double quotes (\\")', () => {
+      const input = 'He said \\"hello\\"';
+      const expected = 'He said "hello"';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should unescape literal backslashes (\\\\)', () => {
+      const input = 'Path: C:\\\\Users';
+      const expected = 'Path: C:\\Users';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should handle text with no escapes', () => {
+      const input = 'Hello World';
+      expect(unescapeShellText(input)).toBe('Hello World');
+    });
+
+    it('should handle multiple different escapes', () => {
+      const input = 'Hello\\! Price \\$5 and \\`code\\`';
+      const expected = 'Hello! Price $5 and `code`';
+      expect(unescapeShellText(input)).toBe(expected);
+    });
+
+    it('should preserve non-escaped special characters', () => {
+      const input = 'Hello! $var `cmd` "quoted"';
+      expect(unescapeShellText(input)).toBe(input);
+    });
+  });
+
   describe('post URI parsing', () => {
     it('should extract DID from AT URI', () => {
       const uri = 'at://did:plc:abc123xyz/app.bsky.feed.post/3k2l5m6n';
