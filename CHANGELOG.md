@@ -122,6 +122,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal dependency footprint
 - Optimized image upload process
 
+## [1.0.1] - 2026-02-07
+
+### Changed
+- Renamed npm package from `bluesky-cli` to `bsky-cli` (name availability)
+- Published to npm registry: `npm install -g bsky-cli`
+- Added npx support: `npx bsky-cli <command>`
+- Updated badges to show npm version and downloads
+
 ## [Unreleased]
 
 ### Planned Features
@@ -138,4 +146,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.0.0]: https://github.com/yourusername/bluesky-cli/releases/tag/v1.0.0
+[1.0.1]: https://github.com/agileguy/bluesky-cli/releases/tag/v1.0.1
+[1.0.0]: https://github.com/agileguy/bluesky-cli/releases/tag/v1.0.0

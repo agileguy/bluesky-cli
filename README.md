@@ -1,7 +1,8 @@
 # Bluesky CLI
 
+[![npm version](https://img.shields.io/npm/v/bsky-cli.svg)](https://www.npmjs.com/package/bsky-cli)
+[![npm downloads](https://img.shields.io/npm/dm/bsky-cli.svg)](https://www.npmjs.com/package/bsky-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/agileguy/bluesky-cli)
 
 A powerful command-line interface for the Bluesky social network, built on the AT Protocol. Post, interact, and manage your Bluesky presence directly from your terminal.
 
@@ -17,16 +18,23 @@ A powerful command-line interface for the Bluesky social network, built on the A
 
 ## Installation
 
-### Using Bun (Recommended)
+### Using npm
+
+```bash
+npm install -g bsky-cli
+```
+
+### Using Bun
 
 ```bash
 bun install -g bsky-cli
 ```
 
-### Using npm
+### Using npx (no install)
 
 ```bash
-npm install -g bsky-cli
+npx bsky-cli login
+npx bsky-cli post "Hello world!"
 ```
 
 ## Quick Start
