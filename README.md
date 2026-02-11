@@ -1,5 +1,9 @@
 # Bluesky CLI
 
+<p align="center">
+  <img src="docs/logo.png" alt="Bluesky CLI Logo" width="200">
+</p>
+
 [![npm version](https://img.shields.io/npm/v/bsky-cli.svg)](https://www.npmjs.com/package/bsky-cli)
 [![npm downloads](https://img.shields.io/npm/dm/bsky-cli.svg)](https://www.npmjs.com/package/bsky-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
