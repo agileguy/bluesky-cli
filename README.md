@@ -1,7 +1,7 @@
 # Bluesky CLI
 
 <p align="center">
-  <img src="docs/logo.png" alt="Bluesky CLI Logo" width="200">
+  <img src="https://raw.githubusercontent.com/agileguy/bluesky-cli/main/docs/logo.png" alt="Bluesky CLI Logo" width="200">
 </p>
 
 [![npm version](https://img.shields.io/npm/v/bsky-cli.svg)](https://www.npmjs.com/package/bsky-cli)
